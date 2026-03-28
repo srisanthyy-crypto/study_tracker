@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}Subjects — StudyTrack AI{% endblock %}
+{% block page_title %}Subjects{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">📚 My Subjects</h1>
+    <p class="page-subtitle">Track progress for each of your courses</p>
+  </div>
+  <button class="btn btn-primary" onclick="openModal('addSubjectModal')">+ Add Subject</button>
+</div>
+
+<!-- ── Subjects Grid ────────────────────────────────── -->
+{% if subjects %}
+<div class="subjects-grid">
+  {% for s in subjects %}
+  <div class="subject-card" style="--subject-color: {{ s.color }}">
+    <div class="subject-card-header">
+      <div class="subject-card-icon" style="background: {{ s.color }}22; color: {{ s.color }}">
+        {{ s.name[0].upper() }}
+      </div>
+      <form method="POST" action="{{ url_for('delete_subject', sid=s.id) }}"
+            onsubmit="return confirm('Delete subject and all its tasks/notes?')">
+        <button type="submit" class="icon-btn danger" title="Delete subject">✕</button>
+      </form>
+    </div>
+
+    <h3 class="subject-card-name">{{ s.name }}</h3>
+    <p class="subject-card-meta">{{ s.total }} tasks · {{ s.done }} done</p>
+
+    <div class="progress-bar-track thin" style="margin-top: 12px;">
+      <div class="progress-bar-fill"
+           style="width:{{ s.progress }}%; background: {{ s.color }}"></div>
+    </div>
+    <div style="display:flex; justify-content:space-between; margin-top:6px;">
+      <small class="muted">Progress</small>
+      <small style="color: {{ s.color }}; font-weight:600">{{ s.progress }}%</small>
+    </div>
+
+    <!-- View tasks for this subject -->
+    <a href="{{ url_for('tasks') }}?subject_id={{ s.id }}" class="btn btn-sm btn-outline"
+       style="margin-top:14px; width:100%; text-align:center;">View Tasks →</a>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-state card">
+  <div class="empty-icon">📚</div>
+  <h3>No subjects yet</h3>
+  <p>Add your first subject to start tracking your progress!</p>
+  <button class="btn btn-primary" onclick="openModal('addSubjectModal')">+ Add Subject</button>
+</div>
+{% endif %}
+
+
+<!-- ── Add Subject Modal ────────────────────────────── -->
+<div class="modal-overlay" id="addSubjectModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Add New Subject</h3>
+      <button class="modal-close" onclick="closeModal('addSubjectModal')">✕</button>
+    </div>
+    <form method="POST" action="{{ url_for('add_subject') }}">
+      <div class="form-group">
+        <label class="form-label">Subject Name *</label>
+        <input type="text" name="name" class="form-input" placeholder="e.g. Data Structures" required />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Color Label</label>
+        <div class="color-picker">
+          <input type="color" name="color" class="color-input" value="#6366f1" />
+          <span class="color-presets">
+            <span class="color-dot" style="background:#6366f1" onclick="setColor('#6366f1')"></span>
+            <span class="color-dot" style="background:#ec4899" onclick="setColor('#ec4899')"></span>
+            <span class="color-dot" style="background:#f59e0b" onclick="setColor('#f59e0b')"></span>
+            <span class="color-dot" style="background:#10b981" onclick="setColor('#10b981')"></span>
+            <span class="color-dot" style="background:#3b82f6" onclick="setColor('#3b82f6')"></span>
+            <span class="color-dot" style="background:#ef4444" onclick="setColor('#ef4444')"></span>
+          </span>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" onclick="closeModal('addSubjectModal')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Add Subject</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Set color picker value from preset dots
+function setColor(hex) {
+  document.querySelector('input[name="color"]').value = hex;
+}
+</script>
+{% endblock %}

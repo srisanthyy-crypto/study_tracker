@@ -1,0 +1,5 @@
+# requirements.txt — StudyTrack AI
+# Install with: pip install -r requirements.txt
+
+flask==3.0.0
+werkzeug==3.0.1

@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}AI Assistant — StudyTrack AI{% endblock %}
+{% block page_title %}AI Assistant{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">🤖 AI Study Assistant</h1>
+    <p class="page-subtitle">Ask me about your tasks, get study tips, or find motivation!</p>
+  </div>
+</div>
+
+<!-- ── Suggestion Pills ─────────────────────────────── -->
+<div class="suggestion-pills">
+  <button class="pill" onclick="sendSuggestion('What are my pending tasks?')">📋 Pending tasks</button>
+  <button class="pill" onclick="sendSuggestion('How am I doing with my progress?')">📊 My progress</button>
+  <button class="pill" onclick="sendSuggestion('Give me a study tip!')">💡 Study tip</button>
+  <button class="pill" onclick="sendSuggestion('What upcoming deadlines do I have?')">⏰ Deadlines</button>
+  <button class="pill" onclick="sendSuggestion('What is my current streak?')">🔥 My streak</button>
+  <button class="pill" onclick="sendSuggestion('I need some motivation!')">🌟 Motivate me</button>
+</div>
+
+<!-- ── Chat Window ──────────────────────────────────── -->
+<div class="chat-wrapper card">
+  <div class="chat-messages" id="chatMessages">
+    <!-- Welcome message -->
+    <div class="chat-bubble bot-bubble">
+      <div class="bubble-avatar">🤖</div>
+      <div class="bubble-content">
+        <p>Hello, <strong>{{ session.username }}</strong>! 👋</p>
+        <p>I'm your AI Study Assistant. I can help you with:</p>
+        <ul>
+          <li>📊 Your progress and stats</li>
+          <li>📋 Pending tasks and deadlines</li>
+          <li>💡 Study tips and strategies</li>
+          <li>🌟 Motivation when you need it</li>
+          <li>📚 Subject information</li>
+        </ul>
+        <p>What would you like to know? 😊</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Input area -->
+  <div class="chat-input-area">
+    <input type="text" id="chatInput" class="chat-input" placeholder="Ask me anything…"
+           onkeydown="if(event.key==='Enter') sendMessage()" />
+    <button class="chat-send-btn" onclick="sendMessage()">Send ➤</button>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/chatbot.js') }}"></script>
+{% endblock %}

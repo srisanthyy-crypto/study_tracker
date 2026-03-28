@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<!-- templates/base.html — Shared layout for all pages -->
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}StudyTrack AI{% endblock %}</title>
+
+  <!-- Google Fonts: Syne (headings) + DM Sans (body) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+  <!-- Main CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+</head>
+<body>
+
+<!-- ── Sidebar Navigation ─────────────────────────────── -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <span class="logo-icon">⚡</span>
+    <span class="logo-text">StudyTrack</span>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a href="{{ url_for('dashboard') }}"
+       class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}">
+      <span class="nav-icon">🏠</span><span>Dashboard</span>
+    </a>
+    <a href="{{ url_for('subjects') }}"
+       class="nav-link {% if request.endpoint == 'subjects' %}active{% endif %}">
+      <span class="nav-icon">📚</span><span>Subjects</span>
+    </a>
+    <a href="{{ url_for('tasks') }}"
+       class="nav-link {% if request.endpoint == 'tasks' %}active{% endif %}">
+      <span class="nav-icon">✅</span><span>Tasks</span>
+    </a>
+    <a href="{{ url_for('notes') }}"
+       class="nav-link {% if request.endpoint == 'notes' %}active{% endif %}">
+      <span class="nav-icon">📝</span><span>Notes</span>
+    </a>
+    <a href="{{ url_for('chatbot') }}"
+       class="nav-link {% if request.endpoint == 'chatbot' %}active{% endif %}">
+      <span class="nav-icon">🤖</span><span>AI Assistant</span>
+    </a>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="user-info">
+      <div class="user-avatar">{{ session.username[0].upper() }}</div>
+      <div class="user-name">{{ session.username }}</div>
+    </div>
+    <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
+  </div>
+</aside>
+
+<!-- ── Mobile Top Bar ─────────────────────────────────── -->
+<header class="topbar">
+  <button class="menu-btn" onclick="toggleSidebar()">☰</button>
+  <span class="topbar-title">{% block page_title %}StudyTrack{% endblock %}</span>
+  <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle Dark/Light mode">🌙</button>
+</header>
+
+<!-- ── Main Content ───────────────────────────────────── -->
+<main class="main-content">
+  {% block content %}{% endblock %}
+</main>
+
+<!-- ── Overlay (mobile sidebar close) ────────────────── -->
+<div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+
+<!-- Main JS -->
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

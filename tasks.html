@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+{% block title %}Tasks — StudyTrack AI{% endblock %}
+{% block page_title %}Tasks{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">✅ Task Manager</h1>
+    <p class="page-subtitle">Manage your assignments and deadlines</p>
+  </div>
+  <button class="btn btn-primary" onclick="openModal('addTaskModal')">+ Add Task</button>
+</div>
+
+<!-- ── Filter Tabs ──────────────────────────────────── -->
+<div class="filter-tabs">
+  <a href="?filter=all"
+     class="filter-tab {% if filter_status == 'all' %}active{% endif %}">All</a>
+  <a href="?filter=pending"
+     class="filter-tab {% if filter_status == 'pending' %}active{% endif %}">Pending</a>
+  <a href="?filter=done"
+     class="filter-tab {% if filter_status == 'done' %}active{% endif %}">Completed</a>
+</div>
+
+<!-- ── Task List ────────────────────────────────────── -->
+{% if tasks %}
+<div class="task-full-list">
+  {% for t in tasks %}
+  <div class="task-full-item {% if t.completed %}completed{% endif %}">
+    <!-- Toggle completion -->
+    <form method="POST" action="{{ url_for('toggle_task', tid=t.id) }}" style="display:inline">
+      <button type="submit" class="task-check {% if t.completed %}checked{% endif %}"
+              title="{{ 'Mark incomplete' if t.completed else 'Mark complete' }}">
+        {% if t.completed %}✓{% else %}○{% endif %}
+      </button>
+    </form>
+
+    <div class="task-full-body">
+      <div class="task-full-title">{{ t.title }}</div>
+      {% if t.description %}
+      <div class="task-full-desc">{{ t.description }}</div>
+      {% endif %}
+      <div class="task-full-meta">
+        {% if t.subject_name %}
+        <span class="tag" style="background:{{ t.subject_color }}22; color:{{ t.subject_color }}">
+          {{ t.subject_name }}
+        </span>
+        {% endif %}
+        {% if t.deadline %}
+        <span class="deadline-badge
+          {% if not t.completed and t.deadline < today %}overdue{% endif %}">
+          📅 {{ t.deadline }}
+          {% if not t.completed and t.deadline < today %} ⚠️ Overdue{% endif %}
+        </span>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="task-full-actions">
+      <!-- Edit button -->
+      <button class="icon-btn" title="Edit"
+        onclick="openEditModal({{ t.id }}, {{ t.title|tojson }}, {{ t.description|tojson }}, {{ (t.deadline or '')|tojson }}, {{ (t.subject_id|string if t.subject_id else '')|tojson }})">✏️</button>
+      <!-- Delete -->
+      <form method="POST" action="{{ url_for('delete_task', tid=t.id) }}"
+            style="display:inline"
+            onsubmit="return confirm('Delete this task?')">
+        <button type="submit" class="icon-btn danger" title="Delete">🗑</button>
+      </form>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+{% else %}
+<div class="empty-state card">
+  <div class="empty-icon">✅</div>
+  <h3>No tasks here</h3>
+  <p>Add your first task to start tracking!</p>
+  <button class="btn btn-primary" onclick="openModal('addTaskModal')">+ Add Task</button>
+</div>
+{% endif %}
+
+
+<!-- ── Add Task Modal ───────────────────────────────── -->
+<div class="modal-overlay" id="addTaskModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Add New Task</h3>
+      <button class="modal-close" onclick="closeModal('addTaskModal')">✕</button>
+    </div>
+    <form method="POST" action="{{ url_for('add_task') }}">
+      <div class="form-group">
+        <label class="form-label">Task Title *</label>
+        <input type="text" name="title" class="form-input" placeholder="What needs to be done?" required />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Description</label>
+        <textarea name="description" class="form-input form-textarea" placeholder="Optional details…"></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Deadline</label>
+          <input type="date" name="deadline" class="form-input" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Subject</label>
+          <select name="subject_id" class="form-input form-select">
+            <option value="">— None —</option>
+            {% for s in subjects %}
+            <option value="{{ s.id }}">{{ s.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" onclick="closeModal('addTaskModal')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Add Task</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ── Edit Task Modal ──────────────────────────────── -->
+<div class="modal-overlay" id="editTaskModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Edit Task</h3>
+      <button class="modal-close" onclick="closeModal('editTaskModal')">✕</button>
+    </div>
+    <form method="POST" id="editTaskForm">
+      <div class="form-group">
+        <label class="form-label">Task Title *</label>
+        <input type="text" name="title" id="editTitle" class="form-input" required />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Description</label>
+        <textarea name="description" id="editDesc" class="form-input form-textarea"></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Deadline</label>
+          <input type="date" name="deadline" id="editDeadline" class="form-input" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Subject</label>
+          <select name="subject_id" id="editSubject" class="form-input form-select">
+            <option value="">— None —</option>
+            {% for s in subjects %}
+            <option value="{{ s.id }}">{{ s.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" onclick="closeModal('editTaskModal')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Today's date for overdue comparison
+const today = "{{ today }}";
+
+function openEditModal(id, title, desc, deadline, subjectId) {
+  // Populate edit form fields
+  document.getElementById('editTitle').value    = title;
+  document.getElementById('editDesc').value     = desc;
+  document.getElementById('editDeadline').value = deadline;
+  document.getElementById('editSubject').value  = subjectId;
+  document.getElementById('editTaskForm').action = `/tasks/edit/${id}`;
+  openModal('editTaskModal');
+}
+</script>
+{% endblock %}

@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — StudyTrack AI{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<!-- ── Welcome Banner ──────────────────────────────────────────── -->
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Welcome back, {{ session.username }}! 👋</h1>
+    <p class="page-subtitle">Here's your study overview for today.</p>
+  </div>
+  <div class="streak-badge">
+    <span class="streak-fire">🔥</span>
+    <span class="streak-count">{{ streak }}</span>
+    <span class="streak-label">day streak</span>
+  </div>
+</div>
+
+<!-- ── Stat Cards ──────────────────────────────────────────────── -->
+<div class="stats-grid">
+  <div class="stat-card stat-purple">
+    <div class="stat-icon">📋</div>
+    <div class="stat-info">
+      <div class="stat-value">{{ total_tasks }}</div>
+      <div class="stat-label">Total Tasks</div>
+    </div>
+  </div>
+  <div class="stat-card stat-green">
+    <div class="stat-icon">✅</div>
+    <div class="stat-info">
+      <div class="stat-value">{{ completed_tasks }}</div>
+      <div class="stat-label">Completed</div>
+    </div>
+  </div>
+  <div class="stat-card stat-blue">
+    <div class="stat-icon">📚</div>
+    <div class="stat-info">
+      <div class="stat-value">{{ total_subjects }}</div>
+      <div class="stat-label">Subjects</div>
+    </div>
+  </div>
+  <div class="stat-card stat-pink">
+    <div class="stat-icon">📝</div>
+    <div class="stat-info">
+      <div class="stat-value">{{ total_notes }}</div>
+      <div class="stat-label">Notes</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Overall Progress Bar ────────────────────────────────────── -->
+<div class="card">
+  <div class="card-header">
+    <h2 class="card-title">Overall Progress</h2>
+    <span class="badge badge-primary">{{ progress }}%</span>
+  </div>
+  <div class="progress-bar-track">
+    <div class="progress-bar-fill" style="width: {{ progress }}%">
+      <span class="progress-bar-text">{{ progress }}%</span>
+    </div>
+  </div>
+  <p class="progress-note">{{ completed_tasks }} of {{ total_tasks }} tasks completed</p>
+</div>
+
+<!-- ── Charts Row ──────────────────────────────────────────────── -->
+<div class="charts-grid">
+  <!-- Subject Progress Doughnut -->
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">Subject Breakdown</h2>
+    </div>
+    <div class="chart-container">
+      <canvas id="subjectChart"></canvas>
+    </div>
+  </div>
+
+  <!-- Weekly Activity Bar Chart -->
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">Weekly Study Activity</h2>
+    </div>
+    <div class="chart-container">
+      <canvas id="activityChart"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- ── Subject Progress List ───────────────────────────────────── -->
+{% if subject_data %}
+<div class="card">
+  <div class="card-header">
+    <h2 class="card-title">Per-Subject Progress</h2>
+    <a href="{{ url_for('subjects') }}" class="btn btn-sm btn-outline">View All →</a>
+  </div>
+  <div class="subject-progress-list">
+    {% for s in subject_data %}
+    <div class="subject-progress-item">
+      <div class="subject-progress-header">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span class="subject-dot" style="background:{{ s.color }}"></span>
+          <span class="subject-name">{{ s.name }}</span>
+        </div>
+        <span class="subject-progress-pct">{{ s.progress }}%</span>
+      </div>
+      <div class="progress-bar-track thin">
+        <div class="progress-bar-fill" style="width:{{ s.progress }}%; background:{{ s.color }}"></div>
+      </div>
+      <small class="subject-tasks-count">{{ s.done }}/{{ s.total }} tasks</small>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+<!-- ── Upcoming Deadlines ──────────────────────────────────────── -->
+<div class="card">
+  <div class="card-header">
+    <h2 class="card-title">⏰ Upcoming Deadlines (7 days)</h2>
+    <a href="{{ url_for('tasks') }}" class="btn btn-sm btn-outline">All Tasks →</a>
+  </div>
+  {% if upcoming %}
+  <div class="task-list">
+    {% for t in upcoming %}
+    <div class="task-item" style="border-left-color: {{ t.subject_color or '#6366f1' }}">
+      <div class="task-item-title">{{ t.title }}</div>
+      <div class="task-item-meta">
+        {% if t.subject_name %}<span class="tag" style="background:{{ t.subject_color }}22; color:{{ t.subject_color }}">{{ t.subject_name }}</span>{% endif %}
+        <span class="deadline-badge">📅 {{ t.deadline }}</span>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <div class="empty-icon">🎉</div>
+    <p>No upcoming deadlines in the next 7 days!</p>
+  </div>
+  {% endif %}
+</div>
+
+<!-- ── Study Timer Widget ──────────────────────────────────────── -->
+<div class="card timer-card">
+  <div class="card-header">
+    <h2 class="card-title">⏱️ Study Timer</h2>
+    <span class="badge badge-outline">Pomodoro</span>
+  </div>
+  <div class="timer-display" id="timerDisplay">25:00</div>
+  <div class="timer-controls">
+    <button class="btn btn-primary" onclick="startTimer()">▶ Start</button>
+    <button class="btn btn-outline" onclick="pauseTimer()">⏸ Pause</button>
+    <button class="btn btn-outline" onclick="resetTimer()">↺ Reset</button>
+  </div>
+  <div class="timer-options">
+    <button class="timer-preset active" onclick="setTimer(25, this)">25 min</button>
+    <button class="timer-preset" onclick="setTimer(10, this)">10 min</button>
+    <button class="timer-preset" onclick="setTimer(5, this)">5 min break</button>
+  </div>
+  <p class="timer-note">Session will be logged to your study streak!</p>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+<script>
+  /* Pass Flask data to JavaScript for Chart.js */
+  const subjectData = {{ subject_data | tojson }};
+  const logDates    = {{ log_dates    | tojson }};
+  const logMinutes  = {{ log_minutes  | tojson }};
+  initDashboardCharts(subjectData, logDates, logMinutes);
+</script>
+{% endblock %}

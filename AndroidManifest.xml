@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- AndroidManifest.xml -->
+<!-- Place in: app/src/main/ -->
+
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.studytrack.app">
+
+    <!-- Internet permission: required to load the web app -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- Allow HTTP (non-HTTPS) traffic for local Flask server -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <application
+        android:allowBackup="true"
+        android:label="StudyTrack AI"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.AppCompat.NoActionBar"
+        android:usesCleartextTraffic="true">
+        <!-- usesCleartextTraffic="true" allows HTTP (needed for local Flask) -->
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:windowSoftInputMode="adjustResize">
+            <!-- Make this the launcher activity -->
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+    </application>
+</manifest>

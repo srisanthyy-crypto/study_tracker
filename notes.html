@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+{% block title %}Notes — StudyTrack AI{% endblock %}
+{% block page_title %}Notes{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">📝 My Notes</h1>
+    <p class="page-subtitle">Capture and organise your study notes</p>
+  </div>
+  <button class="btn btn-primary" onclick="openModal('addNoteModal')">+ Add Note</button>
+</div>
+
+<!-- ── Notes Grid ───────────────────────────────────── -->
+{% if notes %}
+<div class="notes-grid">
+  {% for n in notes %}
+  <div class="note-card">
+    <div class="note-card-header">
+      {% if n.subject_name %}
+      <span class="tag tag-sm">{{ n.subject_name }}</span>
+      {% endif %}
+      <div class="note-actions">
+        <button class="icon-btn" title="Edit"
+          onclick="openEditNoteModal({{ n.id }}, {{ n.title|tojson }}, {{ n.content|tojson }}, {{ (n.subject_id|string)|tojson }})">✏️</button>
+        <form method="POST" action="{{ url_for('delete_note', nid=n.id) }}"
+              style="display:inline"
+              onsubmit="return confirm('Delete this note?')">
+          <button type="submit" class="icon-btn danger" title="Delete">🗑</button>
+        </form>
+      </div>
+    </div>
+    <h3 class="note-title">{{ n.title }}</h3>
+    <p class="note-content">{{ n.content[:200] }}{% if n.content|length > 200 %}…{% endif %}</p>
+    <div class="note-footer">
+      <small class="muted">{{ n.created_at[:10] }}</small>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-state card">
+  <div class="empty-icon">📝</div>
+  <h3>No notes yet</h3>
+  <p>Create your first study note!</p>
+  <button class="btn btn-primary" onclick="openModal('addNoteModal')">+ Add Note</button>
+</div>
+{% endif %}
+
+
+<!-- ── Add Note Modal ───────────────────────────────── -->
+<div class="modal-overlay" id="addNoteModal">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <h3>Add New Note</h3>
+      <button class="modal-close" onclick="closeModal('addNoteModal')">✕</button>
+    </div>
+    <form method="POST" action="{{ url_for('add_note') }}">
+      <div class="form-group">
+        <label class="form-label">Note Title *</label>
+        <input type="text" name="title" class="form-input" placeholder="e.g. SQL Joins Cheatsheet" required />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Subject</label>
+        <select name="subject_id" class="form-input form-select">
+          <option value="">— None —</option>
+          {% for s in subjects %}
+          <option value="{{ s.id }}">{{ s.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Content</label>
+        <textarea name="content" class="form-input form-textarea tall"
+                  placeholder="Write your notes here…"></textarea>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" onclick="closeModal('addNoteModal')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save Note</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ── Edit Note Modal ──────────────────────────────── -->
+<div class="modal-overlay" id="editNoteModal">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <h3>Edit Note</h3>
+      <button class="modal-close" onclick="closeModal('editNoteModal')">✕</button>
+    </div>
+    <form method="POST" id="editNoteForm">
+      <div class="form-group">
+        <label class="form-label">Note Title *</label>
+        <input type="text" name="title" id="editNoteTitle" class="form-input" required />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Subject</label>
+        <select name="subject_id" id="editNoteSubject" class="form-input form-select">
+          <option value="">— None —</option>
+          {% for s in subjects %}
+          <option value="{{ s.id }}">{{ s.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Content</label>
+        <textarea name="content" id="editNoteContent" class="form-input form-textarea tall"></textarea>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" onclick="closeModal('editNoteModal')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function openEditNoteModal(id, title, content, subjectId) {
+  document.getElementById('editNoteTitle').value   = title;
+  document.getElementById('editNoteContent').value = content;
+  document.getElementById('editNoteSubject').value = subjectId || '';
+  document.getElementById('editNoteForm').action   = `/notes/edit/${id}`;
+  openModal('editNoteModal');
+}
+</script>
+{% endblock %}
