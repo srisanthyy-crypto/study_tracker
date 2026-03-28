@@ -7,7 +7,73 @@
   <title>Login — StudyTrack AI</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <!DOCTYPE html>
+<!-- templates/login.html — Login Page -->
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login — StudyTrack AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+</head>
+<body class="auth-body">
+
+<div class="auth-container">
+  <!-- Left panel: branding -->
+  <div class="auth-brand">
+    <div class="brand-glow"></div>
+    <div class="brand-content">
+      <div class="brand-logo">⚡</div>
+      <h1 class="brand-title">StudyTrack<br/>AI</h1>
+      <p class="brand-tagline">Your intelligent academic companion. Track progress, manage tasks, and ace your exams.</p>
+      <div class="brand-features">
+        <div class="brand-feature">📊 Smart Progress Charts</div>
+        <div class="brand-feature">🤖 AI Study Assistant</div>
+        <div class="brand-feature">🔥 Streak Tracking</div>
+        <div class="brand-feature">🌙 Dark Mode Ready</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right panel: form -->
+  <div class="auth-form-panel">
+    <div class="auth-card">
+      <h2 class="auth-title">Welcome Back</h2>
+      <p class="auth-subtitle">Sign in to continue your study journey</p>
+
+      {% if error %}
+      <div class="alert alert-error">⚠️ {{ error }}</div>
+      {% endif %}
+
+      <form method="POST" action="{{ url_for('login') }}">
+        <div class="form-group">
+          <label class="form-label">Username</label>
+          <input type="text" name="username" class="form-input" placeholder="Enter your username" required autofocus />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input type="password" name="password" class="form-input" placeholder="Enter your password" required />
+        </div>
+        <button type="submit" class="btn btn-primary btn-full">Sign In →</button>
+      </form>
+
+      <p class="auth-switch">Don't have an account?
+        <a href="{{ url_for('signup') }}">Sign up free</a>
+      </p>
+
+      <!-- Demo hint -->
+      <div class="demo-hint">
+        <strong>💡 Demo:</strong> Sign up to get sample data automatically!
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
 </head>
 <body class="auth-body">
 
